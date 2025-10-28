@@ -29,7 +29,7 @@ public:
         std::optional<CodeModel::Model> CM, CodeGenOptLevel OL,
         bool JIT)
     : CodeGenTargetMachineImpl(T, 
-            "e-p:64:64-i8:8:8-i16:16:16-i64:64",
+            "e-m:m-p:64:64-i8:8:8-i16:16:16-i64:64",
             TT, CPU, FS, Options,
             getEffectiveRelocModel(RM),
             getEffectiveCodeModel(CM, CodeModel::Medium),

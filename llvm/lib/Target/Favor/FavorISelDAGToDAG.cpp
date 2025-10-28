@@ -21,7 +21,7 @@ public:
 
 char FavorDAGToDAGISelLegacy::ID = 0;
 
-INITIALIZE_PASS(FavorDAGToDAGISelLegacy, DEBUG_TYPE, "favor-isel", false, false);
+INITIALIZE_PASS(FavorDAGToDAGISelLegacy, DEBUG_TYPE, "favor-isel", false, false)
 
 
 FunctionPass *llvm::createFavorISelDagLegacy(FavorTargetMachine &TM,
