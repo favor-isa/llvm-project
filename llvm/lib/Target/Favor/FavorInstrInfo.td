@@ -9,7 +9,11 @@ def PsuedoRet : PsuedoFavorInst<(outs), (ins), "ret"> {
     let isTerminator = 1;
 }
 
+def PsuedoLi : PsuedoFavorInst<(outs GPR64:$rd), (ins i32imm:$imm), "li $rd, $imm">;
+
 def : Pat<(FavorRetSDN), (PsuedoRet)>;
+
+def : Pat<(i32 imm:$imm), (PsuedoLi imm:$imm)>;
 
 def callseq_end : SDNode<"ISD::CALLSEQ_END", SDTNone,
     [SDNPHasChain, SDNPOptInGlue]>;
