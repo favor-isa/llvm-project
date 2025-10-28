@@ -981,6 +981,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
   case Triple::bpfeb:
   case Triple::bpfel:
   case Triple::csky:
+  case Triple::favor:
   case Triple::hexagon:
   case Triple::hsail64:
   case Triple::hsail:
@@ -1812,6 +1813,7 @@ Triple Triple::get32BitArchVariant() const {
   case Triple::avr:
   case Triple::bpfeb:
   case Triple::bpfel:
+  case Triple::favor:
   case Triple::msp430:
   case Triple::systemz:
   case Triple::ve:

@@ -4,4 +4,10 @@
 #define GET_REGINFO_ENUM
 #include "FavorGenRegisterInfo.inc"
 
+#define GET_SUBTARGETINFO_ENUM
+#include "FavorGenSubtargetInfo.inc"
+
+#define GET_INSTRINFO_ENUM
+#include "FavorGenInstrInfo.inc"
+
 #endif
