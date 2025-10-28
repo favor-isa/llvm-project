@@ -39,6 +39,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
   case bpfel:          return "bpfel";
   case csky:           return "csky";
   case dxil:           return "dxil";
+  case favor:          return "favor";
   case hexagon:        return "hexagon";
   case hsail64:        return "hsail64";
   case hsail:          return "hsail";
@@ -509,6 +510,7 @@ Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
       .Case("loongarch32", loongarch32)
       .Case("loongarch64", loongarch64)
       .Case("dxil", dxil)
+      .Case("favor", favor)
       .Case("xtensa", xtensa)
       .Default(UnknownArch);
 }
@@ -660,6 +662,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
                   "dxilv1.4", "dxilv1.5", "dxilv1.6", "dxilv1.7", "dxilv1.8",
                   "dxilv1.9"},
                  Triple::dxil)
+          .Case("favor", Triple::favor)
           .Case("xtensa", Triple::xtensa)
           .Default(Triple::UnknownArch);
 
@@ -1747,6 +1750,7 @@ unsigned Triple::getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
   case llvm::Triple::amdil64:
   case llvm::Triple::bpfeb:
   case llvm::Triple::bpfel:
+  case llvm::Triple::favor:
   case llvm::Triple::hsail64:
   case llvm::Triple::loongarch64:
   case llvm::Triple::mips64:
@@ -1912,6 +1916,7 @@ Triple Triple::get64BitArchVariant() const {
   case Triple::amdil64:
   case Triple::bpfeb:
   case Triple::bpfel:
+  case Triple::favor:
   case Triple::hsail64:
   case Triple::loongarch64:
   case Triple::mips64:
