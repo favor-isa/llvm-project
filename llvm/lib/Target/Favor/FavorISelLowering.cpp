@@ -54,7 +54,32 @@ FavorTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
 SDValue FavorTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   SmallVectorImpl<SDValue> &InVals) const {
   
-  return SDValue();
+    SelectionDAG &DAG = CLI.DAG;
+    SDLoc DL = CLI.DL;
+    SDValue Chain = CLI.Chain;
+    auto PtrVT = getPointerTy(DAG.getDataLayout());
+
+    SDValue InGlue;
+
+    unsigned i = 0;
+    for(auto &val : InVals) {
+      if(!val.getValueType().isScalarInteger()) {
+        report_fatal_error("Only integer arguments are supported", false);
+      }
+      Chain = DAG.getCopyToReg(Chain, DL, Favor::A0 + i, val, InGlue);
+      InGlue = Chain.getValue(1);
+
+      i += 1;
+    }
+
+    SDValue Callee = CLI.Callee;
+    if (GlobalAddressSDNode *G = dyn_cast<GlobalAddressSDNode>(Callee))
+      Callee = DAG.getTargetGlobalAddress(G->getGlobal(), DL, PtrVT, 0);
+    else if (ExternalSymbolSDNode *E = dyn_cast<ExternalSymbolSDNode>(Callee))
+      Callee = DAG.getTargetExternalSymbol(E->getSymbol(), PtrVT);
+
+    Chain = DAG.getNode(FavorISD::CALL, DL, MVT::Other, Callee, InGlue);
+    return Chain;
 }
 
 bool FavorTargetLowering::CanLowerReturn(CallingConv::ID CallConv, MachineFunction &MF,

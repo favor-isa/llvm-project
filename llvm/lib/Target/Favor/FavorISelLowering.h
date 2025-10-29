@@ -11,6 +11,7 @@ enum NodeType : unsigned {
 
   // Return
   Ret,
+  CALL,
 };
 }
 
