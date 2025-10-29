@@ -6,6 +6,15 @@ using namespace llvm;
 
 #define DEBUG_TYPE "favor-isel"
 
+// Helper function stolen from Mips
+static unsigned
+addLiveIn(MachineFunction &MF, unsigned PReg, const TargetRegisterClass *RC)
+{
+  Register VReg = MF.getRegInfo().createVirtualRegister(RC);
+  MF.getRegInfo().addLiveIn(PReg, VReg);
+  return VReg;
+}
+
 FavorTargetLowering::FavorTargetLowering(const TargetMachine &TM,
                                        const FavorSubtarget &STI)
     : TargetLowering(TM) {
@@ -53,6 +62,10 @@ FavorTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
 
 SDValue FavorTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   SmallVectorImpl<SDValue> &InVals) const {
+
+    // Some notes:
+    // CLI.Outs is the arguments
+    // CLI.Ins is the return values
   
     SelectionDAG &DAG = CLI.DAG;
     SDLoc DL = CLI.DL;
@@ -61,24 +74,54 @@ SDValue FavorTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
     SDValue InGlue;
 
+    SmallVector<SDValue> Ops;
+    // Need to be added later due to pattern setup
+    SmallVector<SDValue> RegOps;
+
     unsigned i = 0;
-    for(auto &val : InVals) {
-      if(!val.getValueType().isScalarInteger()) {
+    for(auto &Out : CLI.Outs) {
+      if(!Out.VT.isScalarInteger()) {
         report_fatal_error("Only integer arguments are supported", false);
       }
-      Chain = DAG.getCopyToReg(Chain, DL, Favor::A0 + i, val, InGlue);
+      
+      Chain = DAG.getCopyToReg(Chain, DL, Favor::A0 + i, CLI.OutVals[i], InGlue);
       InGlue = Chain.getValue(1);
+      
+      RegOps.push_back(DAG.getRegister(Favor::A0 + i, Out.VT));
 
       i += 1;
     }
 
     SDValue Callee = CLI.Callee;
-    if (GlobalAddressSDNode *G = dyn_cast<GlobalAddressSDNode>(Callee))
+    if (GlobalAddressSDNode *G = dyn_cast<GlobalAddressSDNode>(Callee)) {
       Callee = DAG.getTargetGlobalAddress(G->getGlobal(), DL, PtrVT, 0);
-    else if (ExternalSymbolSDNode *E = dyn_cast<ExternalSymbolSDNode>(Callee))
+    }
+    else if (ExternalSymbolSDNode *E = dyn_cast<ExternalSymbolSDNode>(Callee)) {
       Callee = DAG.getTargetExternalSymbol(E->getSymbol(), PtrVT);
+    }
 
-    Chain = DAG.getNode(FavorISD::CALL, DL, MVT::Other, Callee, InGlue);
+    Ops.push_back(Chain);
+    Ops.push_back(Callee);
+
+    for(auto Op : RegOps) { 
+      Ops.push_back(Op);
+    }
+
+    Chain = DAG.getNode(FavorISD::CALL, DL, MVT::Other, Ops);
+    // TODO: Add Call seq end
+
+    // Return values
+    for (unsigned i = 0; i != CLI.Ins.size(); ++i) {
+      const ISD::InputArg &In = CLI.Ins[i];
+      if(!In.VT.isScalarInteger()) {
+          report_fatal_error("Only integer argument types are supported", false);
+      }
+
+      unsigned Reg = addLiveIn(DAG.getMachineFunction(), Favor::A0 + i, getRegClassFor(In.VT));
+      SDValue InVal = DAG.getCopyFromReg(Chain, DL, Reg, In.VT);
+      //Glue = Chain.getValue(1);
+      InVals.push_back(InVal);
+    }
     return Chain;
 }
 
@@ -89,14 +132,7 @@ bool FavorTargetLowering::CanLowerReturn(CallingConv::ID CallConv, MachineFuncti
       return true;
 }
 
-// Helper function stolen from Mips
-static unsigned
-addLiveIn(MachineFunction &MF, unsigned PReg, const TargetRegisterClass *RC)
-{
-  Register VReg = MF.getRegInfo().createVirtualRegister(RC);
-  MF.getRegInfo().addLiveIn(PReg, VReg);
-  return VReg;
-}
+
 
 SDValue
 FavorTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID CallConv,
@@ -136,6 +172,7 @@ const char *FavorTargetLowering::getTargetNodeName(unsigned Opcode) const {
   switch (Opcode) {
   case FavorISD::Ret:
     return "FavorISD::Ret";
+  case FavorISD::CALL: return "FavorISD::CALL";
   default:
     return "Unknown FavorISD::Node";
   }

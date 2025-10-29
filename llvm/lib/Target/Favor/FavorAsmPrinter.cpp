@@ -9,6 +9,7 @@
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/MC/TargetRegistry.h"
+#include "llvm/Support/FormatVariadic.h"
 
 #define DEBUG_TYPE "favor-asm-printer"
 
@@ -38,7 +39,7 @@ private:
 MCOperand FavorAsmPrinter::lowerSymbolOperand(const MachineOperand &MO, MCSymbol *Sym) {
   auto &Ctx = OutContext;
   const MCExpr *Expr = MCSymbolRefExpr::create(Sym, Ctx);
-  assert(MO.isMBB() && "Only basic block symbols are supported");
+  //assert(MO.isMBB() && "Only basic block symbols are supported");
   return MCOperand::createExpr(Expr);
 }
 
@@ -62,9 +63,20 @@ void FavorAsmPrinter::lowerInstruction(const MachineInstr &MI, MCInst &Inst) {
       case MachineOperand::MO_MachineBasicBlock:
         MCOp = lowerSymbolOperand(Op, Op.getMBB()->getSymbol());
         break;
+      case MachineOperand::MO_ExternalSymbol: {
+          auto &Ctx = OutContext;
+          const MCExpr *Expr = MCSymbolRefExpr::create(GetExternalSymbolSymbol(Op.getSymbolName()), Ctx);
+          MCOp = MCOperand::createExpr(Expr);
+        }
+        break;
+      case MachineOperand::MO_GlobalAddress: {
+          MCOp = lowerSymbolOperand(Op, getSymbol(Op.getGlobal()));
+          //PrintSymbolOperand(Op, OutStreamer);
+        }
+        break;
       // Add other operand types as needed
       default:
-        llvm_unreachable("Unsupported operand type");
+        reportFatalInternalError(formatv("Unsupported operand type: {0}\n", (int)Op.getType()));
     }
     Inst.addOperand(MCOp);
   }

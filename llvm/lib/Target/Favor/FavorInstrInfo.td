@@ -18,21 +18,22 @@ def PsuedoRet : PsuedoFavorInst<(outs), (ins), "ret"> {
     let isTerminator = 1;
 }
 
-def PsuedoLi : PsuedoFavorInst<(outs GPR64:$rd), (ins i32imm:$imm), "li.s32 $rd, $imm">;
-// def PsuedoLiR32 : PsuedoFavorInst<(outs GPR64:$rd), (ins tglobaladdr:$addr), "li.r32 $rd, $addr">;
+def PsuedoLi : PsuedoFavorInst<(outs GPR64:$rd), (ins i32imm:$imm), "li.u32 $rd, $imm">;
+def PsuedoLiR32 : PsuedoFavorInst<(outs GPR64:$rd), (ins i64imm:$addr), "li.r32 $rd, $addr">;
 
 // Two's complement: Addition & subtraction use unsigned ops
 def ADD_I32 : FavorALU_rr<"add", ".u32">;
 def SUB_I32 : FavorALU_rr<"sub", ".u32">;
 
-def CALL : FavorInst<(outs), (ins i64imm:$disp), "j.l $disp">;
+def CALL : FavorInst<(outs), (ins i64imm:$disp, variable_ops), "j.l $disp">;
 
 def : Pat<(FavorRetSDN), (PsuedoRet)>;
 
 def : Pat<(i32 imm:$imm), (PsuedoLi imm:$imm)>;
+def : Pat<(i64 texternalsym:$dst), (PsuedoLiR32 texternalsym:$dst)>;
 
 def : Pat<(i32 (add GPR64:$rs1, GPR64:$rs2)), (ADD_I32 GPR64:$rs1, GPR64:$rs2)>;
-// def : Pat<(tglobaladdr:$addr), (PsuedoLiR32 tglobaladdr:$addr)>;
+
 def : Pat<(call tglobaladdr:$dst),
           (CALL tglobaladdr:$dst)>;
 def : Pat<(call texternalsym:$dst),
