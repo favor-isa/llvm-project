@@ -9,7 +9,8 @@ def PsuedoRet : PsuedoFavorInst<(outs), (ins), "ret"> {
     let isTerminator = 1;
 }
 
-def PsuedoLi : PsuedoFavorInst<(outs GPR64:$rd), (ins i32imm:$imm), "li $rd, $imm">;
+def PsuedoLi : PsuedoFavorInst<(outs GPR64:$rd), (ins i32imm:$imm), "li.s32 $rd, $imm">;
+// def PsuedoLiR32 : PsuedoFavorInst<(outs GPR64:$rd), (ins tglobaladdr:$addr), "li.r32 $rd, $addr">;
 
 // Two's complement: Addition & subtraction use unsigned ops
 def ADD_I32 : FavorALU_rr<"add", ".u32">;
@@ -20,6 +21,7 @@ def : Pat<(FavorRetSDN), (PsuedoRet)>;
 def : Pat<(i32 imm:$imm), (PsuedoLi imm:$imm)>;
 
 def : Pat<(i32 (add GPR64:$rs1, GPR64:$rs2)), (ADD_I32 GPR64:$rs1, GPR64:$rs2)>;
+// def : Pat<(tglobaladdr:$addr), (PsuedoLiR32 tglobaladdr:$addr)>;
 
 def callseq_end : SDNode<"ISD::CALLSEQ_END", SDTNone,
     [SDNPHasChain, SDNPOptInGlue]>;

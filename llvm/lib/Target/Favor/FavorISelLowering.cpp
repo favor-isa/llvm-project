@@ -10,6 +10,7 @@ FavorTargetLowering::FavorTargetLowering(const TargetMachine &TM,
                                        const FavorSubtarget &STI)
     : TargetLowering(TM) {
   addRegisterClass(MVT::i32, &Favor::GPR64RegClass);
+  addRegisterClass(MVT::i64, &Favor::GPR64RegClass);
 
   computeRegisterProperties(STI.getRegisterInfo());
 }
