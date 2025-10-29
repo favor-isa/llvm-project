@@ -11,8 +11,9 @@ def PsuedoRet : PsuedoFavorInst<(outs), (ins), "ret"> {
 
 def PsuedoLi : PsuedoFavorInst<(outs GPR64:$rd), (ins i32imm:$imm), "li $rd, $imm">;
 
-def ADD_I32 : FavorALU_rr<"add", ".s32">;
-def SUB_I32 : FavorALU_rr<"sub", ".s32">;
+// Two's complement: Addition & subtraction use unsigned ops
+def ADD_I32 : FavorALU_rr<"add", ".u32">;
+def SUB_I32 : FavorALU_rr<"sub", ".u32">;
 
 def : Pat<(FavorRetSDN), (PsuedoRet)>;
 
