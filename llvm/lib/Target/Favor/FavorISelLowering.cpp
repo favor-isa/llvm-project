@@ -33,7 +33,7 @@ FavorTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
   }
 
   SDValue Glue;
-  SmallVector<SDValue, 3> RetOps(1, Chain);
+  SmallVector<SDValue> RetOps(1, Chain);
   for (unsigned i = 0, e = Outs.size(); i != e; ++i) {
     const ISD::OutputArg &Out = Outs[i];
     const SDValue &OutVal = OutVals[i];
@@ -52,14 +52,47 @@ FavorTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
 
 SDValue FavorTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   SmallVectorImpl<SDValue> &InVals) const {
-    return SDValue();
-  }
+  
+  return SDValue();
+}
 
 bool FavorTargetLowering::CanLowerReturn(CallingConv::ID CallConv, MachineFunction &MF,
     bool IsVarArg,
     const SmallVectorImpl<ISD::OutputArg> &Outs,
     LLVMContext &Context, const Type *RetTy) const{
       return true;
+}
+
+SDValue
+FavorTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID CallConv,
+  bool isVarArg,
+  const SmallVectorImpl<ISD::InputArg> & Ins,
+  const SDLoc & dl, SelectionDAG & DAG,
+  SmallVectorImpl<SDValue> & InVals) const {
+
+  if(isVarArg) { report_fatal_error("VarArgs not supported."); }
+
+  if (Ins.size() == 0) {
+    return Chain;
+  }
+
+  SDValue Glue;
+  //SmallVector<SDValue> ArgOps(1, Chain);
+  for (unsigned i = 0, e = Ins.size(); i != e; ++i) {
+    const ISD::InputArg &In = Ins[i];
+    if(!In.ArgVT.isScalarInteger()) {
+        report_fatal_error("Only integer argument types are supported", false);
+    }
+    SDValue InVal = DAG.getCopyFromReg(Chain, dl, Favor::A0 + i, In.VT);
+    Glue = Chain.getValue(1);
+    InVals.push_back(InVal);
+    //ArgOps.push_back(DAG.getRegister(Favor::A0 + i, In.VT));
+  }
+  //ArgOps[0] = Chain;
+ // ArgOps.push_back(Glue);
+
+  // TODO: Need glue?
+  return Chain;
 }
 
 const char *FavorTargetLowering::getTargetNodeName(unsigned Opcode) const {

@@ -39,9 +39,7 @@ public:
                        bool /*isVarArg*/,
                        const SmallVectorImpl<ISD::InputArg> & /*Ins*/,
                        const SDLoc & /*dl*/, SelectionDAG & /*DAG*/,
-                       SmallVectorImpl<SDValue> & /*InVals*/) const override {
-    return Chain;
-  }
+                       SmallVectorImpl<SDValue> & /*InVals*/) const override;
   /// getTargetNodeName - This method returns the name of a target specific
   //  DAG node.
   const char *getTargetNodeName(unsigned Opcode) const override;
