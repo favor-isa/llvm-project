@@ -63,6 +63,15 @@ bool FavorTargetLowering::CanLowerReturn(CallingConv::ID CallConv, MachineFuncti
       return true;
 }
 
+// Helper function stolen from Mips
+static unsigned
+addLiveIn(MachineFunction &MF, unsigned PReg, const TargetRegisterClass *RC)
+{
+  Register VReg = MF.getRegInfo().createVirtualRegister(RC);
+  MF.getRegInfo().addLiveIn(PReg, VReg);
+  return VReg;
+}
+
 SDValue
 FavorTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID CallConv,
   bool isVarArg,
@@ -83,7 +92,9 @@ FavorTargetLowering::LowerFormalArguments(SDValue Chain, CallingConv::ID CallCon
     if(!In.ArgVT.isScalarInteger()) {
         report_fatal_error("Only integer argument types are supported", false);
     }
-    SDValue InVal = DAG.getCopyFromReg(Chain, dl, Favor::A0 + i, In.VT);
+
+    unsigned Reg = addLiveIn(DAG.getMachineFunction(), Favor::A0 + i, getRegClassFor(In.VT));
+    SDValue InVal = DAG.getCopyFromReg(Chain, dl, Reg, In.VT);
     Glue = Chain.getValue(1);
     InVals.push_back(InVal);
     //ArgOps.push_back(DAG.getRegister(Favor::A0 + i, In.VT));

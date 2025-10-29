@@ -11,8 +11,8 @@ def PsuedoRet : PsuedoFavorInst<(outs), (ins), "ret"> {
 
 def PsuedoLi : PsuedoFavorInst<(outs GPR64:$rd), (ins i32imm:$imm), "li $rd, $imm">;
 
-def ADD_I32 : FavorALU_rr<"add", "s32">;
-def SUB_I32 : FavorALU_rr<"sub", "s32">;
+def ADD_I32 : FavorALU_rr<"add", ".s32">;
+def SUB_I32 : FavorALU_rr<"sub", ".s32">;
 
 def : Pat<(FavorRetSDN), (PsuedoRet)>;
 
