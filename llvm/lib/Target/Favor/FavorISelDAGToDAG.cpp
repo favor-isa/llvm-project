@@ -41,6 +41,17 @@ void FavorDAGToDAGISel::Select(SDNode *Node) {
   // instructions. For example, you might want to match a specific node type and
   // then create a corresponding machine instruction.
 
+  if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Node)) {
+    //EVT ValTy = Node->getValueType();
+
+    //Base   = CurDAG->getTargetFrameIndex(FIN->getIndex(), ValTy);
+    //Offset = CurDAG->getTargetConstant(0, SDLoc(Addr), ValTy);
+    //SDValue Offset = CurDAG->getTargetConstant(0, FIN->getDebugLoc(), )
+    //CurDAG->getNode(FavorISD::FRAME_INDEX, FIN->getDebugLoc(), MVT::Other);
+    //ReplaceNode(FIN, FIN);
+    //return;
+  }
+
   // Example: if (Node->getOpcode() == ISD::ADD) { ... }
   // This is just a placeholder for the actual implementation.
   SelectCode(Node);

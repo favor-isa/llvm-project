@@ -12,6 +12,7 @@ enum NodeType : unsigned {
   // Return
   Ret,
   CALL,
+  FRAME_INDEX,
 };
 }
 

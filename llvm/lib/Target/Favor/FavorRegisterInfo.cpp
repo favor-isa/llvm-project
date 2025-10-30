@@ -3,8 +3,12 @@
 #include "FavorFrameLowering.h"
 
 #include "llvm/ADT/BitVector.h"
+#include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/CodeGen/MachineInstrBuilder.h"
+#include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
+#include "llvm/CodeGen/TargetInstrInfo.h"
 
 using namespace llvm;
 
@@ -50,7 +54,29 @@ BitVector FavorRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
 bool FavorRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
                                            int SPAdj, unsigned FIOperandNum,
                                            RegScavenger *RS) const {
-  return true;
+  
+  MachineInstr &MI = *II;
+
+  LLVM_DEBUG(errs() << "Favor: eliminateFrameIndex" << MI);
+  MachineBasicBlock &MBB = *MI.getParent();
+  MachineFunction &MF = *MI.getParent()->getParent();
+  const TargetInstrInfo &TII = *MBB.getParent()->getSubtarget().getInstrInfo();
+  auto DL = II->getDebugLoc();
+  MachineRegisterInfo &RegInfo = MBB.getParent()->getRegInfo();
+
+  int FrameIndex = MI.getOperand(FIOperandNum).getIndex();
+  uint64_t stackSize = MF.getFrameInfo().getStackSize();
+  int64_t spOffset = MF.getFrameInfo().getObjectOffset(FrameIndex);
+
+  Register Reg = RegInfo.createVirtualRegister(&Favor::GPR64RegClass);
+  BuildMI(MBB, II, DL, TII.get(Favor::LOAD_I32), Reg)
+    .addReg(Favor::SP)
+    .addImm(spOffset);
+
+  MI.getOperand(FIOperandNum).ChangeToRegister(Reg, false, false, false);
+  //MI.getOperand(OpNo + 1).ChangeToImmediate(Offset);
+
+  return false;
 }
 
 Register FavorRegisterInfo::getFrameRegister(const MachineFunction &MF) const {
