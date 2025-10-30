@@ -10,6 +10,12 @@ class PsuedoFavorInst<dag outs, dag ins, string asmString> : FavorInst<outs, ins
     let isCodeGenOnly = 1;
 }
 
+//def ALUImm : Operand<i32>;
+
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
     class FavorALU_rr<string opcode, string ty> : FavorInst<(outs GPR64:$rd), (ins GPR64:$rs1, GPR64:$rs2),
         !strconcat(opcode, ty, " $rd, $rs1, $rs2")>;
+
+// let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
+//     class FavorALU_ri<string opcode, string ty> : FavorInst<(outs GPR64:$rd), (ins GPR64:$rs1, ALUImm:$is2),
+//         !strconcat(opcode, ty, " $rd, $rs1, $is2")>;     

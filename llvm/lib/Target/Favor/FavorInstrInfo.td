@@ -23,6 +23,10 @@ def PsuedoRet : PsuedoFavorInst<(outs), (ins), "ret"> {
     let isTerminator = 1;
 }
 
+def FI : Operand<i64> {
+  //let PrintMethod = "printFrameIndexOperand";
+}
+
 def PsuedoLi : PsuedoFavorInst<(outs GPR64:$rd), (ins i32imm:$imm), "li.u32 $rd, $imm">;
 def LI_U64 : PsuedoFavorInst<(outs GPR64:$rd), (ins i64imm:$imm), "li.u64 $rd, $imm">;
 def PsuedoLiR32 : PsuedoFavorInst<(outs GPR64:$rd), (ins i64imm:$addr), "li.r32 $rd, $addr">;
@@ -31,13 +35,16 @@ def PsuedoLiR32 : PsuedoFavorInst<(outs GPR64:$rd), (ins i64imm:$addr), "li.r32 
 def ADD_I32 : FavorALU_rr<"add", ".u32">;
 def SUB_I32 : FavorALU_rr<"sub", ".u32">;
 
+//def ADDI_I32 : FavorALU_ri<"addi", ".u32">;
+def ADDI_I32: FavorInst<(outs GPR64:$rd), (ins GPR64:$rs, i32imm:$val), "addi.u32 $rd, $rs, $val">;
+
 def LOAD_I32 : FavorInst<(outs GPR64:$rd), (ins GPR64:$addr), "ld.u32 $rd, [$addr]">;
 def STORE_I32 : FavorInst<(outs), (ins GPR64:$dst, GPR64:$addr), "st.u32 $dst, [$addr]">;
 
 def STORE_I32_F : FavorInst<(outs), (ins GPR64:$dst, i64imm:$offset), "st.u32 $dst, [sp + $offset]">;
 
 // JANK idea: Try to synthesize i64 = FrameIndex<> with this
-def SP_JANK : FavorInst<(outs GPR64:$rd), (ins), "addi.u64 $rd, sp, sp">;
+def SP_JANK : FavorInst<(outs GPR64:$rd), (ins FI:$offset), "addi.u64 $rd, sp, $offset">;
 
 def LOAD_SP_I32 : FavorInst<(outs GPR64:$rd), (ins i64imm:$offset), "ld.u32 $rd, [sp + $offset]">;
 
@@ -52,6 +59,7 @@ def : Pat<(i64 texternalsym:$dst), (PsuedoLiR32 texternalsym:$dst)>;
 def : Pat<(i64 tglobaladdr:$dst), (PsuedoLiR32 tglobaladdr:$dst)>;
 
 def : Pat<(i32 (add GPR64:$rs1, GPR64:$rs2)), (ADD_I32 GPR64:$rs1, GPR64:$rs2)>;
+def : Pat<(i32 (add GPR64:$rs1, imm:$is2)), (ADDI_I32 GPR64:$rs1, imm:$is2)>;
 
 // Thoughts:
 // To get something like loads/stores to the stack to work, we can't just
@@ -68,7 +76,7 @@ def : Pat<(store i32:$value, i64:$addr), (STORE_I32 GPR64:$value, GPR64:$addr)>;
 //def : Pat<(store i32:$value, (frameindex i64imm:$offset)), (STORE_I32_F GPR64:$value, i64imm:$offset)>;
 // def : Pat<(i32 (load (frameindex i64:$thing))), ()
 
-def : Pat<(i64 (frameindex)), (SP_JANK)>;
+def : Pat<(i64 (frameindex:$fi)), (SP_JANK FI:$fi)>;
 
 def : Pat<(call tglobaladdr:$dst),
           (CALL tglobaladdr:$dst)>;
