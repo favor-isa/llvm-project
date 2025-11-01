@@ -25,6 +25,7 @@ add_llvm_target(FavorCodeGen
   FavorRegisterInfo.cpp
   FavorSubtarget.cpp
   FavorTargetObjectFile.cpp
+  FavorFrameLowering.cpp
   
   LINK_COMPONENTS
   MC

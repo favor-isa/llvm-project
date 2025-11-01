@@ -39,6 +39,13 @@ def SUB_I32 : FavorALU_rr<"sub", ".u32">;
 def ADDI_I32: FavorInst<(outs GPR64:$rd), (ins GPR64:$rs, i32imm:$val), "addi.u32 $rd, $val"> {
   let Constraints = "$rd = $rs";
 }
+// TODO: This is a 64-bit add, but the immediate is actually much smaller.
+def ADDI_U64: FavorInst<(outs GPR64:$rd), (ins GPR64:$rs, i64imm:$val), "addi.u64 $rd, $val"> {
+  let Constraints = "$rd = $rs";
+}
+def SUBI_U64: FavorInst<(outs GPR64:$rd), (ins GPR64:$rs, i64imm:$val), "subi.u64 $rd, $val"> {
+  let Constraints = "$rd = $rs";
+}
 
 def LOAD_I32 : FavorInst<(outs GPR64:$rd), (ins GPR64:$addr), "ld.u32 $rd, [$addr]">;
 def STORE_I32 : FavorInst<(outs), (ins GPR64:$dst, GPR64:$addr), "st.u32 $dst, [$addr]">;

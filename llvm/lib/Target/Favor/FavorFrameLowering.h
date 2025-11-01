@@ -11,14 +11,15 @@
 
 namespace llvm {
 class FavorFrameLowering : public TargetFrameLowering {
+  const TargetSubtargetInfo& STI;
 public:
-  explicit FavorFrameLowering(const TargetSubtargetInfo &STI, Align Alignment)
-      : TargetFrameLowering(StackGrowsDown, Alignment, 0, Alignment) {}
+  explicit FavorFrameLowering(const TargetSubtargetInfo &STI_, Align Alignment)
+      : TargetFrameLowering(StackGrowsDown, Alignment, 0, Alignment), STI(STI_) {}
 
   void emitPrologue(MachineFunction &MF,
-                    MachineBasicBlock &MBB) const override {}
+                    MachineBasicBlock &MBB) const override;
   void emitEpilogue(MachineFunction &MF,
-                    MachineBasicBlock &MBB) const override {}
+                    MachineBasicBlock &MBB) const override;
 
   bool hasFPImpl(const MachineFunction &MF) const override { return true; }
 };
