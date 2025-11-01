@@ -16,6 +16,8 @@ public:
 
   bool runOnMachineFunction(MachineFunction &MF) override;
 
+  bool selectAddrFrameIndex(SDValue Addr, SDValue &Base, SDValue &Offset) const;
+
 private:
 #include "FavorGenDAGISel.inc"
 

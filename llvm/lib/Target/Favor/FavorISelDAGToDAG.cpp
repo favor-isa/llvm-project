@@ -35,6 +35,39 @@ bool FavorDAGToDAGISel::runOnMachineFunction(MachineFunction &MF) {
   return SelectionDAGISel::runOnMachineFunction(MF);
 }
 
+bool FavorDAGToDAGISel::selectAddrFrameIndex(SDValue Addr, SDValue &Base,
+                                              SDValue &Offset) const {
+                                                
+  // Explanation for what this does:
+  // When eliminating FrameIndex in eliminateFrameIndex, we need two operands
+  // in our machine code: The stack pointer (a register), plus the offset from
+  // it (a constant).
+  //
+  // So, we need to generate a MachineInstr that has these properties.
+  //
+  // To do so, we create a ComplexPattern for our addresses, and then match
+  // on these to create a load instruction.
+  //
+  // Although... maybe we can do this more simply...?
+  //
+  // Yes we can!
+  //
+  // For now, to keep things simple, we simply directly replace the FrameIndex
+  // in our generated Loads/Stores with the Offset. We can do this because we
+  // are essentially using a special instruction for the FrameIndex implementation.
+  //
+  // If we ever make our load/stores more generic, then the better approach will
+  // be to use a ComplexPattern plus this idea.
+  if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
+    EVT ValTy = Addr.getValueType();
+
+    Base   = CurDAG->getTargetFrameIndex(FIN->getIndex(), ValTy);
+    Offset = CurDAG->getTargetConstant(0, SDLoc(Addr), ValTy);
+    return true;
+  }
+  return false;
+}
+
 void FavorDAGToDAGISel::Select(SDNode *Node) {
   // Implement the selection logic here.
   // This is where you would match the SelectionDAG nodes to the target
@@ -46,17 +79,17 @@ void FavorDAGToDAGISel::Select(SDNode *Node) {
   if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Node)) {
     //EVT ValTy = Node->getValueType();
 
-    EVT VT = EVT::getIntegerVT(Ctx, 64);
+    // EVT VT = EVT::getIntegerVT(Ctx, 64);
 
-    //SDValue Offset = CurDAG->getTargetConstant(0, FIN->getDebugLoc(), )
-    //CurDAG->getNode(FavorISD::FRAME_INDEX, FIN->getDebugLoc(), MVT::Other);
-    SDLoc DL(FIN);
-    SDValue Value = CurDAG->getTargetConstant((uint64_t)FIN->getIndex() * 8, DL, VT);
+    // //SDValue Offset = CurDAG->getTargetConstant(0, FIN->getDebugLoc(), )
+    // //CurDAG->getNode(FavorISD::FRAME_INDEX, FIN->getDebugLoc(), MVT::Other);
+    // SDLoc DL(FIN);
+    // SDValue Value = CurDAG->getTargetConstant((uint64_t)FIN->getIndex() * 8, DL, VT);
 
-    SDValue FI = CurDAG->getTargetFrameIndex(FIN->getIndex(), FIN->getValueType(0));
+    // SDValue FI = CurDAG->getTargetFrameIndex(FIN->getIndex(), FIN->getValueType(0));
 
-    //SDNode *Node = CurDAG->getNode(ISD::Constant, DL, VT, );
-    ReplaceNode(FIN, Value.getNode());
+    // //SDNode *Node = CurDAG->getNode(ISD::Constant, DL, VT, );
+    // ReplaceNode(FIN, Value.getNode());
     return;
   }
 

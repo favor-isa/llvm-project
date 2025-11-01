@@ -57,7 +57,6 @@ bool FavorRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
   
   MachineInstr &MI = *II;
 
-  LLVM_DEBUG(errs() << "Favor: eliminateFrameIndex" << MI);
   MachineBasicBlock &MBB = *MI.getParent();
   MachineFunction &MF = *MI.getParent()->getParent();
   const TargetInstrInfo &TII = *MBB.getParent()->getSubtarget().getInstrInfo();
@@ -68,13 +67,24 @@ bool FavorRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
   uint64_t stackSize = MF.getFrameInfo().getStackSize();
   int64_t spOffset = MF.getFrameInfo().getObjectOffset(FrameIndex);
 
-  Register Reg = RegInfo.createVirtualRegister(&Favor::GPR64RegClass);
-  BuildMI(MBB, II, DL, TII.get(Favor::LOAD_I32), Reg)
-    .addReg(Favor::SP)
-    .addImm(spOffset);
+  LLVM_DEBUG(errs() << "\nFunction : " << MF.getFunction().getName() << "\n";
+             errs() << "<--------->\n" << MI);
 
-  MI.getOperand(FIOperandNum).ChangeToRegister(Reg, false, false, false);
-  //MI.getOperand(OpNo + 1).ChangeToImmediate(Offset);
+  LLVM_DEBUG(errs() << "FrameIndex : " << FrameIndex << "\n"
+                    << "spOffset   : " << spOffset << "\n"
+                    << "stackSize  : " << stackSize << "\n");
+
+//   Register Reg = RegInfo.createVirtualRegister(&Favor::GPR64RegClass);
+//   BuildMI(MBB, II, DL, TII.get(Favor::LOAD_I32), Reg)
+//     .addReg(Favor::SP)
+//     .addImm(spOffset);
+
+  int64_t Offset = spOffset + (int64_t)stackSize;
+
+  //MI.getOperand(FIOperandNum).ChangeToRegister(Favor::SP, false, false, false);
+  //MI.getOperand(FIOperandNum + 1).ChangeToImmediate(Offset);
+
+  MI.getOperand(FIOperandNum).ChangeToImmediate(Offset);
 
   return false;
 }
