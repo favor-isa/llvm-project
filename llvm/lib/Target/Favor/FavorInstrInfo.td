@@ -46,7 +46,7 @@ def STORE_I32 : FavorInst<(outs), (ins GPR64:$dst, GPR64:$addr), "st.u32 $dst, [
 def STORE_I32_F : FavorInst<(outs), (ins GPR64:$dst, i64imm:$offset), "st.u32 $dst, [sp + $offset]">;
 
 // JANK idea: Try to synthesize i64 = FrameIndex<> with this
-def SP_JANK : FavorInst<(outs GPR64:$rd), (ins FI:$offset), "addi.u64 $rd, sp, $offset">;
+def SP_JANK : FavorInst<(outs GPR64:$rd), (ins FI:$offset), "add.u64 $rd, $rd, sp\naddi.u64 $rd, $offset">;
 
 def LOAD_SP_I32 : FavorInst<(outs GPR64:$rd), (ins i64imm:$offset), "ld.u32 $rd, [sp + $offset]">;
 
