@@ -51,7 +51,7 @@ void FavorDAGToDAGISel::Select(SDNode *Node) {
     //SDValue Offset = CurDAG->getTargetConstant(0, FIN->getDebugLoc(), )
     //CurDAG->getNode(FavorISD::FRAME_INDEX, FIN->getDebugLoc(), MVT::Other);
     SDLoc DL(FIN);
-    SDValue Value = CurDAG->getTargetConstant((uint64_t)FIN->getIndex(), DL, VT);
+    SDValue Value = CurDAG->getTargetConstant((uint64_t)FIN->getIndex() * 8, DL, VT);
     //SDNode *Node = CurDAG->getNode(ISD::Constant, DL, VT, );
     ReplaceNode(FIN, Value.getNode());
     return;
