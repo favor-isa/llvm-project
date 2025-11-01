@@ -76,20 +76,11 @@ void FavorDAGToDAGISel::Select(SDNode *Node) {
 
   auto &Ctx = *CurDAG->getContext();
 
+  // What this does (afaiii) is essentially say "we always successfully match on FrameIndex."
+  //
+  // That is not, per-se, true, but until we get slightly more sophisticated patterns
+  // it is fine...
   if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Node)) {
-    //EVT ValTy = Node->getValueType();
-
-    // EVT VT = EVT::getIntegerVT(Ctx, 64);
-
-    // //SDValue Offset = CurDAG->getTargetConstant(0, FIN->getDebugLoc(), )
-    // //CurDAG->getNode(FavorISD::FRAME_INDEX, FIN->getDebugLoc(), MVT::Other);
-    // SDLoc DL(FIN);
-    // SDValue Value = CurDAG->getTargetConstant((uint64_t)FIN->getIndex() * 8, DL, VT);
-
-    // SDValue FI = CurDAG->getTargetFrameIndex(FIN->getIndex(), FIN->getValueType(0));
-
-    // //SDNode *Node = CurDAG->getNode(ISD::Constant, DL, VT, );
-    // ReplaceNode(FIN, Value.getNode());
     return;
   }
 
