@@ -46,9 +46,10 @@ def STORE_I32 : FavorInst<(outs), (ins GPR64:$dst, GPR64:$addr), "st.u32 $dst, [
 def STORE_I32_F : FavorInst<(outs), (ins GPR64:$dst, i64imm:$offset), "st.u32 $dst, [sp + $offset]">;
 
 // JANK idea: Try to synthesize i64 = FrameIndex<> with this
-def SP_JANK : FavorInst<(outs GPR64:$rd), (ins FI:$offset), "add.u64 $rd, $rd, sp\naddi.u64 $rd, $offset">;
+def SP_JANK : FavorInst<(outs GPR64:$rd), (ins i64imm:$offset), "add.u64 $rd, $rd, sp\naddi.u64 $rd, $offset">;
 
 def LOAD_SP_I32 : FavorInst<(outs GPR64:$rd), (ins i64imm:$offset), "ld.u32 $rd, [sp + $offset]">;
+def STORE_SP_I32 : FavorInst<(outs), (ins GPR64:$dst, i64imm:$offset), "st.u32 $dst, [sp + $offset]">;
 
 def CALL : FavorInst<(outs), (ins i64imm:$disp, variable_ops), "j.l $disp">;
 
@@ -76,9 +77,10 @@ def : Pat<(store i32:$value, i64:$addr), (STORE_I32 GPR64:$value, GPR64:$addr)>;
 // def : Pat<(i32 (frame_index i64imm:$offset)), (LOAD_SP_I32 i64imm:$offset)>;
 
 //def : Pat<(store i32:$value, (frameindex i64imm:$offset)), (STORE_I32_F GPR64:$value, i64imm:$offset)>;
-// def : Pat<(i32 (load (frameindex i64:$thing))), ()
+def : Pat<(i32 (load (frameindex:$fi))), (LOAD_SP_I32 imm:$fi)>;
+def : Pat<(store i32:$value, (frameindex:$fi)), (STORE_SP_I32 GPR64:$value, imm:$fi)>;
 
-def : Pat<(i64 (frameindex:$fi)), (SP_JANK FI:$fi)>;
+//def : Pat<(i64 (frameindex:$fi)), (SP_JANK imm:$fi)>;
 
 def : Pat<(call tglobaladdr:$dst),
           (CALL tglobaladdr:$dst)>;
